@@ -1,0 +1,16 @@
+Default: &defaults
+  database: shoes.sqlite3
+  poolsize: 10
+
+Development:
+  <<: *defaults
+
+Testing:
+  <<: *defaults
+
+Staging:
+  <<: *defaults
+
+Production:
+  database: shoes_prod.sqlite3
+  <<: *defaults

@@ -1,6 +1,8 @@
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies    #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Foundation
@@ -15,12 +17,24 @@
 module Foundation where
 
 import Database.Persist.Sql
+import Database.Persist.Sqlite (SqliteConf)
 import Yesod
+import Yesod.Core.Types (Logger)
 
 import Shoes.Model
 
-data ShoesApp = ShoesApp
+data ShoesApp
+    = ShoesApp
+      { appPool   :: PersistConfigPool SqliteConf
+      , appConfig :: SqliteConf
+      , appLogger :: Logger
+      }
 
 mkYesodData "ShoesApp" $(parseRoutesFile "lib/routes")
 
 instance Yesod ShoesApp
+
+instance YesodPersist ShoesApp where
+    type YesodPersistBackend ShoesApp = SqlPersistT
+
+    runDB = defaultRunDB appConfig appPool

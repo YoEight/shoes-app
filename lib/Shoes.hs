@@ -22,6 +22,7 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Base64 (decode)
 import Data.Text.Encoding (encodeUtf8)
 
+import Foundation
 import Shoes.Model
 
 data NewShoes
@@ -49,3 +50,12 @@ instance FromJSON NewShoes where
                 Left e      -> fail e
                 Right bytes -> return bytes
     parseJSON _ = mzero
+
+postNewShoesR :: Handler Value
+postNewShoesR = undefined
+
+getShoesR :: ShoesId -> Handler Value
+getShoesR = undefined
+
+getShoesListR :: Handler Value
+getShoesListR = undefined
