@@ -17,6 +17,7 @@ library
   build-depends:        base                >=4.6      && < 4.7
                       , aeson
                       , attoparsec
+                      , base64-bytestring   >= 1.0     && < 1.1
                       , bytestring          >= 0.9     && < 0.11
                       , conduit             >= 1.0     && < 1.1
                       , fast-logger         >= 2.0.0
