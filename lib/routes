@@ -1,0 +1,3 @@
+/shoes NewShoesR POST
+/shoes/#ShoesId ShoesR GET
+/shoes_list ShoesListR GET

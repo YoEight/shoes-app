@@ -30,7 +30,9 @@ library
                       , yesod               >= 1.2     && < 1.3
                       , yesod-core          >= 1.2     && < 1.3
 
-  exposed-modules:    Shoes.Model
+  exposed-modules:    Foundation
+                      Shoes
+                      Shoes.Model
 
   ghc-options: -Wall -Werror -threaded -O2
 
