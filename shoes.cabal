@@ -18,6 +18,8 @@ library
                       , aeson
                       , attoparsec
                       , base64-bytestring   >= 1.0     && < 1.1
+                      , blaze-builder
+                      , blaze-html
                       , bytestring          >= 0.9     && < 0.11
                       , conduit             >= 1.0     && < 1.1
                       , data-default

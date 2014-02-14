@@ -23,6 +23,7 @@ import Control.Applicative ((<$>), (<*>))
 import Control.Monad (mzero)
 import Data.Int (Int64)
 
+import Blaze.ByteString.Builder (Builder)
 import Data.Aeson hiding (decode)
 import Data.Aeson.Types (Parser)
 import Data.Attoparsec.ByteString hiding (Parser)
@@ -33,6 +34,7 @@ import Data.ByteString.Base64 (decode)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text, pack, append)
 import Data.Text.Encoding (encodeUtf8)
+import Text.Blaze.Html.Renderer.Utf8 (renderHtmlBuilder)
 import Yesod
 
 import Foundation
@@ -89,8 +91,23 @@ shoesAndPhotoHtml (ShoesAndPhoto (s, path)) =
                  <div>#{shoesColor s}
                  <div>#{shoesSize s}|]
 
-getShoesListR :: Handler Value
-getShoesListR = undefined
+getShoesListR :: Handler TypedContent
+getShoesListR = respondSource "text/html" (source $= toShoesIdHtml)
+  where
+    source = transPipe runDB (selectSource [] [])
+
+toShoesIdHtml :: Conduit (Entity Shoes) Handler (Flush Builder)
+toShoesIdHtml = loop go
+  where
+    loop k = do
+        iOpt <- await
+        case iOpt of
+            Nothing -> yield Flush
+            Just i  -> yield (Chunk $ k i) >> loop k
+
+    go = html . pack . show . keyToInt . entityKey
+
+    html i = renderHtmlBuilder [shamlet|<a href=#{i}>i|]
 
 sinkJson :: Sink ByteString Handler Value
 sinkJson = do
