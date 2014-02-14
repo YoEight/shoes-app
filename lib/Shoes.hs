@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
+{-# LANGUAGE QuasiQuotes          #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 -----------------------------------------------------------------------------
 -- |
@@ -30,7 +31,7 @@ import Data.Conduit.Binary
 import Data.ByteString (ByteString, empty)
 import Data.ByteString.Base64 (decode)
 import Data.Maybe (fromMaybe)
-import Data.Text (pack)
+import Data.Text (Text, pack, append)
 import Data.Text.Encoding (encodeUtf8)
 import Yesod
 
@@ -38,6 +39,8 @@ import Foundation
 import Shoes.Model
 
 data NewShoes = NewShoes !Shoes !ByteString -- < photo bytes
+
+newtype ShoesAndPhoto = ShoesAndPhoto (Shoes, Text)
 
 instance FromJSON NewShoes where
     parseJSON p@(Object m) =
@@ -66,8 +69,25 @@ postNewShoesR = do
         Error e   -> invalidArgs [pack e]
         Success n -> saveNewShoes n
 
-getShoesR :: ShoesId -> Handler Value
-getShoesR = undefined
+getShoesR :: ShoesId -> Handler Html
+getShoesR sId = do
+    rOpt <- runDB $ do
+            sOpt <- get sId
+            pOpt <- selectFirst [PhotoShoes ==. sId] []
+            return (select <$> sOpt <*> pOpt)
+    maybe notFound (return . shoesAndPhotoHtml) rOpt
+  where
+    select s p =
+        ShoesAndPhoto (s, photoFilePath $ entityVal p)
+
+shoesAndPhotoHtml :: ShoesAndPhoto -> Html
+shoesAndPhotoHtml (ShoesAndPhoto (s, path)) =
+    let fpath = "file://" `append` path in
+    [shamlet|<div>
+                 <img src=#{fpath}>
+                 <div>#{shoesDesc s}
+                 <div>#{shoesColor s}
+                 <div>#{shoesSize s}|]
 
 getShoesListR :: Handler Value
 getShoesListR = undefined
