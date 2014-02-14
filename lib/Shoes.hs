@@ -97,7 +97,7 @@ getShoesListR = respondSource "text/html" (source $= toShoesIdHtml)
     source = transPipe runDB (selectSource [] [])
 
 toShoesIdHtml :: Conduit (Entity Shoes) Handler (Flush Builder)
-toShoesIdHtml = loop go
+toShoesIdHtml = loop . go =<< lift getUrlRenderParams
   where
     loop k = do
         iOpt <- await
@@ -105,9 +105,10 @@ toShoesIdHtml = loop go
             Nothing -> yield Flush
             Just i  -> yield (Chunk $ k i) >> loop k
 
-    go = html . pack . show . keyToInt . entityKey
+    go render = html render . entityKey
 
-    html i = renderHtmlBuilder [shamlet|<a href=#{i}>i|]
+    html render i =
+        renderHtmlBuilder ([hamlet|<a href=@{ShoesR i}>i|] render)
 
 sinkJson :: Sink ByteString Handler Value
 sinkJson = do
