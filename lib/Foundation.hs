@@ -30,7 +30,7 @@ data ShoesApp
       , appLogger :: Logger
       }
 
-mkYesodData "ShoesApp" $(parseRoutesFile "lib/routes")
+mkYesodData "ShoesApp" $(parseRoutesFile "config/routes")
 
 instance Yesod ShoesApp
 

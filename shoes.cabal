@@ -51,6 +51,7 @@ executable shoes
   -- other-extensions:
   build-depends:       base >=4.6 && <4.7
                      , shoes
+                     , yesod
   ghc-options: -Wall -Werror -threaded -O2
 
   -- hs-source-dirs:
