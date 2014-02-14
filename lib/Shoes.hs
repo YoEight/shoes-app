@@ -32,7 +32,7 @@ import Data.Conduit.Binary
 import Data.ByteString (ByteString, empty)
 import Data.ByteString.Base64 (decode)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text, pack, append)
+import Data.Text (Text, pack)
 import Data.Text.Encoding (encodeUtf8)
 import Text.Blaze.Html.Renderer.Utf8 (renderHtmlBuilder)
 import Yesod
@@ -84,9 +84,8 @@ getShoesR sId = do
 
 shoesAndPhotoHtml :: ShoesAndPhoto -> Html
 shoesAndPhotoHtml (ShoesAndPhoto (s, path)) =
-    let fpath = "file://" `append` path in
     [shamlet|<div>
-                 <img src=#{fpath}>
+                 <img src=#{path}>
                  <div>#{shoesDesc s}
                  <div>#{shoesColor s}
                  <div>#{shoesSize s}|]
@@ -126,7 +125,7 @@ saveNewShoes (NewShoes shoes photoBin) =
     runDB $ do
         nsId <- insert shoes
         let key      = keyToInt nsId
-            filepath = "repo/" ++ show key ++ ".jpeg"
+            filepath = "./repo/" ++ show key ++ ".jpeg"
             photo    = Photo nsId (pack filepath)
             source   = yield photoBin
         liftIO $ runResourceT (source $$ sinkFile filepath)
