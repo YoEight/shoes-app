@@ -1,8 +1,5 @@
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE QuasiQuotes     #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies    #-}
-{-# LANGUAGE ScopedTypeVariables, RankNTypes #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Foundation

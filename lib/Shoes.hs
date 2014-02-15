@@ -136,7 +136,7 @@ saveNewShoes (NewShoes shoes photoBin) = do
         insert_ photo
 
 getPhotoDir :: Handler FilePath
-getPhotoDir = fmap (appPhotoDir) getYesod
+getPhotoDir = fmap appPhotoDir getYesod
 
 keyToInt :: ShoesId -> Int64
 keyToInt = go . unKey
