@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -----------------------------------------------------------------------------
@@ -18,6 +19,7 @@ module Application
 
 
 import           Control.Monad.Logger (runLoggingT)
+import           Data.Configurator (Worth( Required ), load, require)
 import           Data.Default (def)
 import qualified Database.Persist
 import           Database.Persist.Sqlite (SqliteConf, runMigration)
@@ -42,8 +44,10 @@ makeFoundation conf = do
                   (dbconf :: SqliteConf)
     logSet     <- newStdoutLoggerSet 0
     (getter,_) <- clockDateCacher
+    cfg        <- load [Required "config/app.cfg"]
+    photoDir   <- require cfg "photo_dir"
     let logger     = Logger logSet getter
-        foundation = ShoesApp pool dbconf logger
+        foundation = ShoesApp pool dbconf logger photoDir
 
     runLoggingT
         (Database.Persist.runPool dbconf (runMigration migrateAll) pool)

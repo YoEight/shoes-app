@@ -32,7 +32,7 @@ import Data.Conduit.Binary
 import Data.ByteString (ByteString, empty)
 import Data.ByteString.Base64 (decode)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text, pack)
+import Data.Text (Text, pack, unpack)
 import Data.Text.Encoding (encodeUtf8)
 import Text.Blaze.Html.Renderer.Utf8 (renderHtmlBuilder)
 import Yesod
@@ -73,22 +73,25 @@ postNewShoesR = do
 
 getShoesR :: ShoesId -> Handler Html
 getShoesR sId = do
+    dir  <- getPhotoDir
     rOpt <- runDB $ do
             sOpt <- get sId
             pOpt <- selectFirst [PhotoShoes ==. sId] []
             return (select <$> sOpt <*> pOpt)
-    maybe notFound (return . shoesAndPhotoHtml) rOpt
+    maybe notFound (return . shoesAndPhotoHtml dir) rOpt
   where
     select s p =
         ShoesAndPhoto (s, photoFilePath $ entityVal p)
 
-shoesAndPhotoHtml :: ShoesAndPhoto -> Html
-shoesAndPhotoHtml (ShoesAndPhoto (s, path)) =
+shoesAndPhotoHtml :: FilePath -> ShoesAndPhoto -> Html
+shoesAndPhotoHtml dir (ShoesAndPhoto (s, path)) =
     [shamlet|<div>
-                 <img src=#{path}>
+                 <img src=#{fpath}>
                  <div>#{shoesDesc s}
                  <div>#{shoesColor s}
                  <div>#{shoesSize s}|]
+  where
+    fpath = dir ++ unpack path
 
 getShoesListR :: Handler TypedContent
 getShoesListR = respondSource "text/html" (source $= toShoesIdHtml)
@@ -107,7 +110,7 @@ toShoesIdHtml = loop . go =<< lift getUrlRenderParams
     go render = html render . entityKey
 
     html render i =
-        renderHtmlBuilder ([hamlet|<a href=@{ShoesR i}>i|] render)
+        renderHtmlBuilder ([hamlet|<a href=@{ShoesR i}>#{keyToInt i}|] render)
 
 sinkJson :: Sink ByteString Handler Value
 sinkJson = do
@@ -121,15 +124,19 @@ sinkJson = do
         invalidArgs [pack e]
 
 saveNewShoes :: NewShoes -> Handler ()
-saveNewShoes (NewShoes shoes photoBin) =
+saveNewShoes (NewShoes shoes photoBin) = do
+    dir <- getPhotoDir
     runDB $ do
         nsId <- insert shoes
         let key      = keyToInt nsId
-            filepath = "./repo/" ++ show key ++ ".jpeg"
-            photo    = Photo nsId (pack filepath)
+            filename = show key ++ ".jpeg"
+            photo    = Photo nsId (pack filename)
             source   = yield photoBin
-        liftIO $ runResourceT (source $$ sinkFile filepath)
+        liftIO $ runResourceT (source $$ sinkFile (dir ++ filename))
         insert_ photo
+
+getPhotoDir :: Handler FilePath
+getPhotoDir = fmap (appPhotoDir) getYesod
 
 keyToInt :: ShoesId -> Int64
 keyToInt = go . unKey

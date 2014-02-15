@@ -25,9 +25,10 @@ import Shoes.Model
 
 data ShoesApp
     = ShoesApp
-      { appPool   :: PersistConfigPool SqliteConf
-      , appConfig :: SqliteConf
-      , appLogger :: Logger
+      { appPool     :: PersistConfigPool SqliteConf
+      , appConfig   :: SqliteConf
+      , appLogger   :: Logger
+      , appPhotoDir :: FilePath
       }
 
 mkYesodData "ShoesApp" $(parseRoutesFile "config/routes")
